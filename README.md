@@ -107,14 +107,6 @@ GET  /v1/runtime/events      # Stream runtime guard events (SSE)
 - `docs/ARCHITECTURE.md` — deeper architecture notes
 - `infra/` — Bicep templates for Azure deployment
 
-## Status
-
-Day 1 hackathon scaffold. Working: control plane skeleton, indirect injection attack (full), LLM-as-judge scorer, in-memory storage, end-to-end scan loop against a mocked target.
-
-Roadmap (next 3 days):
-- Day 2: 5 remaining attacks, Cosmos DB storage
-- Day 3: Runtime guard middleware + Prompt Shields integration, dashboard
-- Day 4: GitHub Action, demo video, deck
 
 ## License
 
