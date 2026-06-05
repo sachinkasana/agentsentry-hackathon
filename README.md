@@ -88,6 +88,31 @@ uvicorn agentsentry.main:app --reload --port 8080
 python -m demo.attack_demo
 ```
 
+### Mission Control dashboard
+
+```bash
+# With the API running on :8080 (step 4 above)
+cd mission-control
+cp .env.example .env.local
+npm install
+npm run dev
+# → http://localhost:3000
+```
+
+See [`mission-control/README.md`](mission-control/README.md) for pages and env vars. Judge demo script: [`docs/MISSION_CONTROL_DEMO.md`](docs/MISSION_CONTROL_DEMO.md).
+
+### Deploy to Azure
+
+**Full guide:** [`docs/AZURE_DEPLOY.md`](docs/AZURE_DEPLOY.md)
+
+```bash
+# One-command deploy (Azure CLI logged in)
+chmod +x infra/deploy.sh
+./infra/deploy.sh
+```
+
+Or via GitHub Actions after adding secrets (see deploy guide).
+
 API surface:
 
 ```
@@ -101,11 +126,14 @@ GET  /v1/runtime/events      # Stream runtime guard events (SSE)
 ## Repo layout
 
 - `src/agentsentry/` — control plane (FastAPI), attacks, scoring, guard
+- `mission-control/` — Next.js Mission Control dashboard (Fluent UI + App Insights)
 - `demo/` — vulnerable Microsoft Agent Framework agent + sample scan script
 - `tests/` — pytest suite
 - `docs/ATTACKS.md` — full attack catalog with payloads & expected outcomes
 - `docs/ARCHITECTURE.md` — deeper architecture notes
-- `infra/` — Bicep templates for Azure deployment
+- `docs/MISSION_CONTROL_DEMO.md` — 3-minute hackathon demo script
+- `infra/` — Bicep templates for Azure deployment (SWA + ACA + App Insights)
+- `.github/workflows/` — infrastructure and Static Web Apps CI/CD
 
 
 ## License

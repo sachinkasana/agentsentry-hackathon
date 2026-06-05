@@ -1,0 +1,59 @@
+name: Deploy Azure Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_group:
+        description: Azure resource group name
+        required: true
+        default: rg-agentsentry
+      location:
+        description: Azure region
+        required: true
+        default: centralindia
+      base_name:
+        description: Resource name prefix
+        required: true
+        default: agentsentry
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure resource group
+        run: |
+          az group create \
+            --name "${{ github.event.inputs.resource_group || 'rg-agentsentry' }}" \
+            --location "${{ github.event.inputs.location || 'centralindia' }}"
+
+      - name: Deploy Bicep
+        run: |
+          DEPLOYMENT_NAME="agentsentry-$(date +%Y%m%d%H%M%S)"
+          az deployment group create \
+            --name "$DEPLOYMENT_NAME" \
+            --resource-group "${{ github.event.inputs.resource_group || 'rg-agentsentry' }}" \
+            --template-file infra/main.bicep \
+            --parameters \
+              baseName="${{ github.event.inputs.base_name || 'agentsentry' }}" \
+              location="${{ github.event.inputs.location || 'centralindia' }}" \
+              swaLocation="southeastasia" \
+            --query properties.outputs \
+            -o json > deployment-outputs.json
+
+          cat deployment-outputs.json
+
+      - name: Upload deployment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-outputs
+          path: deployment-outputs.json

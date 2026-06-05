@@ -41,3 +41,11 @@ logs/
 # AgentSentry local data
 .agentsentry/
 scans.db
+
+# Mission Control (Next.js)
+mission-control/node_modules/
+mission-control/.next/
+mission-control/out/
+mission-control/.env.local
+infra/main.parameters.json
+infra/deployment-outputs.json

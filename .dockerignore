@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.git/
+.github/
+mission-control/
+node_modules/
+infra/
+docs/
+tests/
+demo/
+*.md
+.env
+.agentsentry/

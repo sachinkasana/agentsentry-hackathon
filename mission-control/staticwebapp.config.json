@@ -1,0 +1,26 @@
+{
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/v1/*", "*.{css,js,json,ico,png,svg,woff2}"]
+  },
+  "routes": [
+    {
+      "route": "/v1/*",
+      "allowedRoles": ["anonymous"],
+      "rewrite": "https://REPLACE_WITH_ACA_FQDN/v1/*"
+    },
+    {
+      "route": "/healthz",
+      "allowedRoles": ["anonymous"],
+      "rewrite": "https://REPLACE_WITH_ACA_FQDN/healthz"
+    }
+  ],
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; connect-src https: wss:;"
+  },
+  "mimeTypes": {
+    ".json": "application/json"
+  }
+}
