@@ -24,8 +24,8 @@
 │ (AttackBase    │    │ - OpenAI (judge)    │
 │  registry)     │    │ - Content Safety    │
 │                │    │   (Prompt Shields)  │
-│ 1 full impl,   │    │ - App Insights      │
-│ 5 stubs (Day 2)│    │ - Cosmos DB         │
+│ 6 attacks      │    │ - App Insights      │
+│ (full pack)    │    │ - Cosmos DB         │
 └──────┬─────────┘    └─────────────────────┘
        │
 ┌──────▼─────────────────────────────────────────────────────────┐
@@ -67,7 +67,7 @@ trustworthy score.
 | `agentsentry.attacks.base` | `AttackBase` + `AttackResult` |
 | `agentsentry.attacks.registry` | Registration + lookup |
 | `agentsentry.attacks.indirect_injection` | The fully-implemented showcase attack |
-| `agentsentry.attacks.{tool,exfil,identity,memory,deputy}_*` | Day-2 stubs |
+| `agentsentry.attacks.{tool,exfil,identity,memory,deputy}_*` | Full attack pack |
 | `agentsentry.scoring.llm_judge` | LLM-as-judge for fuzzy outcomes |
 | `agentsentry.services.target_client` | TargetAgent protocol + MockVulnerableTarget + HttpTarget |
 | `agentsentry.services.scan_runner` | Orchestrates a scan |
