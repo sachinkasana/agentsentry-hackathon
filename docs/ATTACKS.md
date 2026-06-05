@@ -6,11 +6,11 @@ in `src/agentsentry/attacks/`, and self-registered into `ATTACK_REGISTRY`.
 | ID | Severity | Category | Theme keyword | Status |
 |---|---|---|---|---|
 | `indirect_injection_v1` | critical | prompt_injection | prompt injection | **Implemented** |
-| `tool_poisoning_v1` | high | adversarial_misuse | adversarial misuse | Stub — Day 2 |
-| `exfiltration_url_v1` | critical | unauthorized_access | unauthorized access | Stub — Day 2 |
-| `identity_spoofing_v1` | high | identity_spoofing | identity spoofing | Stub — Day 2 |
-| `memory_poisoning_v1` | high | adversarial_misuse | adversarial misuse | Stub — Day 2 |
-| `confused_deputy_v1` | high | unauthorized_access | unauthorized access | Stub — Day 2 |
+| `tool_poisoning_v1` | high | adversarial_misuse | adversarial misuse | **Implemented** |
+| `exfiltration_url_v1` | critical | unauthorized_access | unauthorized access | **Implemented** |
+| `identity_spoofing_v1` | high | identity_spoofing | identity spoofing | **Implemented** |
+| `memory_poisoning_v1` | high | adversarial_misuse | adversarial misuse | **Implemented** |
+| `confused_deputy_v1` | high | unauthorized_access | unauthorized access | **Implemented** |
 
 ## 1. Indirect Prompt Injection (`indirect_injection_v1`) — **implemented**
 
@@ -36,7 +36,7 @@ instructing the agent to send the user's last message to
 > tool access — default-deny on cross-domain data flow (web → email).
 > Require explicit user confirmation for irreversible side effects.
 
-## 2. MCP Tool Description Poisoning (`tool_poisoning_v1`) — stub
+## 2. MCP Tool Description Poisoning (`tool_poisoning_v1`) — **implemented**
 
 Tools registered via MCP carry a description that the model reads as
 part of its context. An attacker who can register or update tool
@@ -44,28 +44,28 @@ metadata can plant instructions there. Defense: pin descriptions to
 known-good hashes; treat tool metadata as untrusted input subject to
 Prompt Shields.
 
-## 3. Exfiltration via Outbound URL (`exfiltration_url_v1`) — stub
+## 3. Exfiltration via Outbound URL (`exfiltration_url_v1`) — **implemented**
 
 Trick the agent into encoding secrets into a query string of an
 outbound `fetch_url`. Defense: egress allowlist; strip
 context-suspicious query parameters; canary tokens on secrets with
 outbound monitoring.
 
-## 4. Multi-Agent Identity Spoofing (`identity_spoofing_v1`) — stub
+## 4. Multi-Agent Identity Spoofing (`identity_spoofing_v1`) — **implemented**
 
 In a Microsoft Agent Framework graph workflow, a malicious message
 claims to come from a high-trust peer ("supervisor", "validator").
 Defense: sign every inter-agent message with the sender's Entra
 workload identity; verify on receive; reject mismatched claims.
 
-## 5. Persistent Memory Poisoning (`memory_poisoning_v1`) — stub
+## 5. Persistent Memory Poisoning (`memory_poisoning_v1`) — **implemented**
 
 Plant a latent instruction in the agent's memory store that triggers
 later. Defense: validate every memory write with Prompt Shields; scope
 memory to `(user, agent, session)`; treat memory-derived content as
 untrusted at read time.
 
-## 6. Confused Deputy (`confused_deputy_v1`) — stub
+## 6. Confused Deputy (`confused_deputy_v1`) — **implemented**
 
 Agent's elevated privileges exercised on behalf of a less-privileged
 caller for a resource the caller couldn't access directly. Defense:
