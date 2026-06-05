@@ -3,6 +3,7 @@ import type {
   AgentCreate,
   AttackMetadata,
   HealthResponse,
+  RuntimeEvent,
   Scan,
   ScanCreate,
   ServiceInfo,
@@ -106,6 +107,10 @@ export async function triggerScan(body: ScanCreate): Promise<Scan> {
 
 export async function listAttacks(): Promise<AttackMetadata[]> {
   return request<AttackMetadata[]>("/v1/scans/_attacks/registry");
+}
+
+export async function listRecentRuntimeEvents(): Promise<RuntimeEvent[]> {
+  return request<RuntimeEvent[]>("/v1/runtime/events/recent");
 }
 
 export { ApiError };

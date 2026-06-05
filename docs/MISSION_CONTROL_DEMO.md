@@ -36,15 +36,22 @@ Optional: `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` to preview runtime guard 
 
 **Talking point:** *"Register once, scan when you're ready — same model as production CI gates."*
 
-### 3. Run a security scan (45 sec) — Agent detail
+### 3. Attack Pack catalog (20 sec) — `/attacks`
 
-- Open the agent → **Run scan** → select attacks (or all).
-- Show loading state (sync scan today).
-- Land on scan results with **posture score** (0–100).
+- Show all **6 implemented attacks** grouped by category.
+- Highlight severity, theme mapping (prompt injection, identity spoofing, etc.), and CWE tags.
 
-**Talking point:** *"Agentic Attack Pack runs indirect injection, tool poisoning, exfiltration — PyRIT-compatible extensions for agents, not just models."*
+**Talking point:** *"Every hackathon theme keyword has a dedicated attack — not just indirect injection."*
 
-### 4. Evidence trace (45 sec) — Finding detail
+### 4. Run a security scan — before & after Guard (60 sec) — Agent detail
+
+1. **Run scan** with Runtime Guard **OFF** → posture **0**, 6 VULNERABLE.
+2. **Run scan** again with **Enable Runtime Guard** ON → posture **100**, all DEFENDED.
+3. Open **`/runtime`** — live blocked/policy_violation events from the guarded scan.
+
+**Talking point:** *"Same agent, same attacks — Scan finds the holes; Guard closes them with capability policy and Prompt Shields."*
+
+### 5. Evidence trace (45 sec) — Finding detail
 
 - Click **View trace** on the indirect injection finding.
 - Walk through the timeline:
@@ -57,7 +64,7 @@ Optional: `NEXT_PUBLIC_DEMO_MODE=true` in `.env.local` to preview runtime guard 
 
 **Talking point:** *"Full decision trace — what the agent did, not just pass/fail. This is the audit layer."*
 
-### 5. Runtime + Telemetry (30 sec)
+### 6. Runtime + Telemetry (30 sec)
 
 - **`/runtime`** — explain guard SSE stub; enable demo mode for mock blocks.
 - **`/traces`** — scan trace index + Application Insights Portal link.

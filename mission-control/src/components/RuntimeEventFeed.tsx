@@ -10,6 +10,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
+import { listRecentRuntimeEvents } from "@/lib/api";
 import type { RuntimeEvent } from "@/types/api";
 
 const useStyles = makeStyles({
@@ -75,6 +76,14 @@ export function RuntimeEventFeed() {
       return;
     }
 
+    listRecentRuntimeEvents()
+      .then((recent) => {
+        if (recent.length > 0) setEvents(recent);
+      })
+      .catch(() => {
+        // API offline — SSE or demo mode may still apply
+      });
+
     const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "";
     const url = `${apiBase}/v1/runtime/events`;
 
@@ -107,13 +116,13 @@ export function RuntimeEventFeed() {
 
   return (
     <div>
-      {!sseAvailable && !demoMode && (
+      {!sseAvailable && !demoMode && events.length === 0 && (
         <MessageBar intent="info" style={{ marginBottom: 16 }}>
           <MessageBarBody>
-            Runtime Guard SSE endpoint (<code>GET /v1/runtime/events</code>) is
-            not available yet. The API team will enable live guard events on Day
-            3. Set <code>NEXT_PUBLIC_DEMO_MODE=true</code> to preview mock
-            events.
+            Connect to the control plane API and run a scan with Runtime Guard
+            enabled to populate live events. Set{" "}
+            <code>NEXT_PUBLIC_DEMO_MODE=true</code> to preview mock events
+            without the API.
           </MessageBarBody>
         </MessageBar>
       )}

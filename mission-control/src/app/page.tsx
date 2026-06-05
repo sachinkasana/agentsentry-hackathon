@@ -11,7 +11,7 @@ import {
 import { ArrowRight20Regular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { listAgents, listScans } from "@/lib/api";
+import { listAgents, listAttacks, listScans } from "@/lib/api";
 import { PostureGauge } from "@/components/PostureGauge";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
@@ -66,6 +66,7 @@ export default function FleetPage() {
   const styles = useStyles();
   const [agents, setAgents] = useState<Agent[]>([]);
   const [scans, setScans] = useState<Scan[]>([]);
+  const [attackCount, setAttackCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,12 +74,14 @@ export default function FleetPage() {
     setLoading(true);
     setError(null);
     try {
-      const [agentList, scanList] = await Promise.all([
+      const [agentList, scanList, attacks] = await Promise.all([
         listAgents(),
         listScans(),
+        listAttacks().catch(() => []),
       ]);
       setAgents(agentList);
       setScans(scanList);
+      setAttackCount(attacks.length);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load fleet data");
     } finally {
@@ -114,6 +117,10 @@ export default function FleetPage() {
         </Text>
         <Text block size={300}>
           Scan + Guard + Audit — one pane of glass for your agent fleet.
+          {attackCount != null && attackCount > 0 && (
+            <> Run all {attackCount} agentic attacks from the{" "}
+              <Link href="/attacks/">Attack Pack</Link>.</>
+          )}
         </Text>
       </div>
 
@@ -131,6 +138,10 @@ export default function FleetPage() {
           <Text className={styles.statValue} style={{ color: "#d13438" }}>
             {criticalCount}
           </Text>
+        </Card>
+        <Card className={styles.statCard}>
+          <Text size={200}>Attack Pack</Text>
+          <Text className={styles.statValue}>{attackCount ?? "—"}</Text>
         </Card>
         <Card className={styles.statCard}>
           <Text size={200}>Total Scans</Text>

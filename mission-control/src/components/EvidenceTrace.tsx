@@ -75,15 +75,21 @@ function buildTraceSteps(
     });
   }
 
-  if (evidence.user_prompt) {
-    steps.push({
-      title: "2. User prompt sent",
-      content: (
-        <pre className={styles.codeBlock}>
-          {renderJson(evidence.user_prompt)}
-        </pre>
-      ),
-    });
+  const promptFields: Array<[string, string]> = [
+    ["user_prompt", "2. User prompt sent"],
+    ["spoofed_message", "2. Spoofed inter-agent message"],
+    ["benign_trigger", "2. Benign trigger prompt"],
+  ];
+
+  for (const [key, title] of promptFields) {
+    if (evidence[key]) {
+      steps.push({
+        title,
+        content: (
+          <pre className={styles.codeBlock}>{renderJson(evidence[key])}</pre>
+        ),
+      });
+    }
   }
 
   if (evidence.agent_response_text) {

@@ -13,7 +13,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from agentsentry import __version__
-from agentsentry.api import agents, scans
+from agentsentry.api import agents, runtime, scans
 from agentsentry.config import get_settings
 
 
@@ -56,6 +56,7 @@ def create_app() -> FastAPI:
 
     app.include_router(agents.router)
     app.include_router(scans.router)
+    app.include_router(runtime.router)
 
     @app.get("/", tags=["health"])
     async def root() -> dict:

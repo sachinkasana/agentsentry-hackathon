@@ -34,7 +34,12 @@ async def trigger_scan(
         if unknown:
             raise HTTPException(status_code=400, detail=f"Unknown attack ids: {unknown}")
 
-    scan = await run_scan(agent=agent, storage=storage, attack_ids=body.attacks)
+    scan = await run_scan(
+        agent=agent,
+        storage=storage,
+        attack_ids=body.attacks,
+        defense_enabled=body.defense_enabled,
+    )
     return scan
 
 

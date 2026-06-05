@@ -8,6 +8,8 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { getAgent, getScan } from "@/lib/api";
 import { PostureGauge } from "@/components/PostureGauge";
 import { FindingsTable } from "@/components/FindingsTable";
+import { AttackCoverageChart } from "@/components/AttackCoverageChart";
+import { ThemeCoverageSummary } from "@/components/ThemeCoverageSummary";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import type { Agent, Scan } from "@/types/api";
@@ -78,8 +80,13 @@ function ScanDetailContent() {
               Agent: <strong>{agent.name}</strong>
             </Text>
           )}
-          <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+          <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
             <Badge appearance="outline">{scan.status}</Badge>
+            {scan.defense_enabled && (
+              <Badge appearance="filled" color="success">
+                Runtime Guard ON
+              </Badge>
+            )}
             <Text size={200}>
               {new Date(scan.started_at).toLocaleString()}
             </Text>
@@ -87,6 +94,16 @@ function ScanDetailContent() {
         </div>
         <PostureGauge score={scan.posture_score} />
       </div>
+
+      {scan.defense_enabled && scan.posture_score != null && scan.posture_score >= 70 && (
+        <Card style={{ padding: 16, marginBottom: 16 }}>
+          <Text weight="semibold">Scan + Guard demo</Text>
+          <Text block size={300}>
+            This scan ran with Runtime Guard enabled. Re-run the same attacks
+            without guard to compare posture (typically 0 vs defended).
+          </Text>
+        </Card>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 16, marginBottom: 24 }}>
         <Card style={{ padding: 16 }}>
@@ -110,8 +127,23 @@ function ScanDetailContent() {
         </Card>
       )}
 
+      {scan.findings.length > 0 && (
+        <>
+          <Text as="h2" size={500} weight="semibold" block style={{ marginBottom: 12 }}>
+            Attack coverage
+          </Text>
+          <div style={{ marginBottom: 32 }}>
+            <AttackCoverageChart findings={scan.findings} scanId={scan.id} />
+          </div>
+
+          <div style={{ marginBottom: 32 }}>
+            <ThemeCoverageSummary findings={scan.findings} />
+          </div>
+        </>
+      )}
+
       <Text as="h2" size={500} weight="semibold" block style={{ marginBottom: 12 }}>
-        Findings
+        Findings table
       </Text>
       {scan.findings.length === 0 ? (
         <Text>No findings recorded for this scan.</Text>

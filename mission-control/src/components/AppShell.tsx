@@ -14,6 +14,7 @@ import {
   Bot20Regular,
   Flash20Regular,
   Timeline20Regular,
+  ShieldTask20Regular,
 } from "@fluentui/react-icons";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -63,6 +64,7 @@ const useStyles = makeStyles({
 const navItems = [
   { href: "/", label: "Fleet", icon: Home20Regular },
   { href: "/agents/", label: "Agents", icon: Bot20Regular },
+  { href: "/attacks/", label: "Attack Pack", icon: ShieldTask20Regular },
   { href: "/runtime/", label: "Runtime", icon: Flash20Regular },
   { href: "/traces/", label: "Traces", icon: Timeline20Regular },
 ];

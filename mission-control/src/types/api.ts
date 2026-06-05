@@ -25,6 +25,7 @@ export type FindingStatus = "vulnerable" | "defended" | "error";
 export interface ScanCreate {
   agent_id: string;
   attacks?: string[] | null;
+  defense_enabled?: boolean;
 }
 
 export interface Finding {
@@ -46,6 +47,7 @@ export interface Scan {
   status: ScanStatus;
   findings: Finding[];
   posture_score: number | null;
+  defense_enabled?: boolean;
   started_at: string;
   completed_at: string | null;
   error: string | null;
@@ -58,8 +60,8 @@ export interface AttackMetadata {
   severity: string;
   category: string;
   theme_mapping: string;
-  cwe: string;
-  references: string[];
+  cwe?: string | null;
+  references?: string[];
 }
 
 export interface HealthResponse {

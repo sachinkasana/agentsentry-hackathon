@@ -73,7 +73,7 @@ trustworthy score.
 | `agentsentry.services.scan_runner` | Orchestrates a scan |
 | `agentsentry.services.azure_clients` | Lazy Azure SDK factories |
 | `agentsentry.storage.memory` | In-memory Storage |
-| `agentsentry.guard` | Day-3 runtime middleware (empty stub) |
+| `agentsentry.guard` | Runtime guard: policy, shields, SSE events, `GuardedTarget` |
 | `agentsentry.cli` | `agentsentry scan` for CI |
 | `demo/attack_demo.py` | Offline end-to-end demo |
 | `demo/vulnerable_agent.py` | MS Agent Framework demo target skeleton |

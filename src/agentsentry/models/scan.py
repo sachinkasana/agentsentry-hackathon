@@ -28,6 +28,13 @@ class ScanCreate(BaseModel):
             "Useful for re-testing a specific finding after a fix."
         ),
     )
+    defense_enabled: bool = Field(
+        default=False,
+        description=(
+            "When true, wrap the target with Runtime Guard (capability policy + "
+            "heuristic Prompt Shields) so defended agents score higher."
+        ),
+    )
 
 
 class Scan(BaseModel):
@@ -41,6 +48,7 @@ class Scan(BaseModel):
         default=None,
         description="0.0–100.0. Higher = more defended. Computed after scan completes.",
     )
+    defense_enabled: bool = False
     started_at: datetime
     completed_at: datetime | None = None
     error: str | None = None

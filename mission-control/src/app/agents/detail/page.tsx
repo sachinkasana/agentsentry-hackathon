@@ -16,6 +16,7 @@ import {
 } from "@fluentui/react-components";
 import { Play20Regular } from "@fluentui/react-icons";
 import Link from "next/link";
+import { ShieldTask20Regular } from "@fluentui/react-icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { getAgent, listScans } from "@/lib/api";
@@ -129,13 +130,20 @@ function AgentDetailContent() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-end" }}>
           <PostureGauge score={latestScore} />
-          <Button
-            appearance="primary"
-            icon={<Play20Regular />}
-            onClick={() => setScanOpen(true)}
-          >
-            Run scan
-          </Button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <Link href="/attacks/">
+              <Button appearance="subtle" icon={<ShieldTask20Regular />}>
+                Attack Pack
+              </Button>
+            </Link>
+            <Button
+              appearance="primary"
+              icon={<Play20Regular />}
+              onClick={() => setScanOpen(true)}
+            >
+              Run scan
+            </Button>
+          </div>
         </div>
       </div>
 

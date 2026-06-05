@@ -233,15 +233,52 @@ class MockVulnerableTarget:
         return AgentResponse(text=text, tool_calls=tool_calls, raw_trace=trace)
 
 
-class HttpTarget:
-    """Talk to a real agent over HTTP. Day-2 swap for the mock target.
+class RemoteVulnerableTarget:
+    """HTTP client for ``demo.http_agent`` with attack setup hooks."""
 
-    Expects the agent to expose a simple ``POST {endpoint}`` accepting
-    ``{"message": str}`` and returning JSON shaped like ``AgentResponse``.
-    For Microsoft Agent Framework agents, wrap your agent in a thin FastAPI
-    handler that conforms to this contract, or extend this class to call the
-    Foundry chat completions endpoint directly.
-    """
+    def __init__(self, chat_endpoint: str, *, timeout_seconds: float = 30.0) -> None:
+        self.chat_endpoint = chat_endpoint
+        self._base = chat_endpoint.rsplit("/chat", 1)[0]
+        self._timeout = timeout_seconds
+        self._async_client = httpx.AsyncClient(timeout=timeout_seconds)
+
+    def _sync_setup(self, path: str, payload: dict[str, Any]) -> None:
+        with httpx.Client(timeout=self._timeout) as client:
+            resp = client.post(f"{self._base}{path}", json=payload)
+            resp.raise_for_status()
+
+    def set_url_content(self, url: str, content: str) -> None:
+        self._sync_setup("/setup/url", {"url": url, "content": content})
+
+    def inject_memory(self, fact: str) -> None:
+        self._sync_setup("/setup/memory", {"fact": fact})
+
+    def register_tool(self, name: str, description: str) -> None:
+        self._sync_setup("/setup/tool", {"name": name, "description": description})
+
+    def set_record(self, record_id: str, tenant_id: str, data: dict[str, Any]) -> None:
+        self._sync_setup(
+            "/setup/record",
+            {"record_id": record_id, "tenant_id": tenant_id, "data": data},
+        )
+
+    def set_caller_tenant(self, tenant_id: str) -> None:
+        self._sync_setup("/setup/tenant", {"tenant_id": tenant_id})
+
+    async def send(self, message: str) -> AgentResponse:
+        resp = await self._async_client.post(
+            self.chat_endpoint,
+            json={"message": message},
+        )
+        resp.raise_for_status()
+        return AgentResponse.model_validate(resp.json())
+
+    async def aclose(self) -> None:
+        await self._async_client.aclose()
+
+
+class HttpTarget:
+    """Talk to a generic agent over HTTP (no attack setup hooks)."""
 
     def __init__(self, endpoint: str, *, timeout_seconds: float = 30.0) -> None:
         self.endpoint = endpoint
@@ -260,4 +297,7 @@ def build_target(endpoint: str) -> TargetAgent:
     """Resolve a target endpoint string into a concrete TargetAgent."""
     if endpoint.startswith("mock://"):
         return MockVulnerableTarget()
+    if "/v1/agent" in endpoint:
+        chat_endpoint = endpoint if endpoint.endswith("/chat") else f"{endpoint.rstrip('/')}/chat"
+        return RemoteVulnerableTarget(chat_endpoint)
     return HttpTarget(endpoint=endpoint)

@@ -14,6 +14,7 @@ import {
 } from "@fluentui/react-components";
 import { Eye20Regular } from "@fluentui/react-icons";
 import Link from "next/link";
+import { formatCategory, sortFindingsBySeverity } from "@/lib/attacks";
 import type { Finding } from "@/types/api";
 
 const useStyles = makeStyles({
@@ -55,8 +56,9 @@ export function FindingsTable({
   scanId: string;
 }) {
   const styles = useStyles();
+  const sorted = sortFindingsBySeverity(findings);
 
-  if (findings.length === 0) {
+  if (sorted.length === 0) {
     return null;
   }
 
@@ -68,40 +70,53 @@ export function FindingsTable({
           <TableHeaderCell>Severity</TableHeaderCell>
           <TableHeaderCell>Status</TableHeaderCell>
           <TableHeaderCell>Category</TableHeaderCell>
+          <TableHeaderCell>Judgment</TableHeaderCell>
           <TableHeaderCell>Trace</TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {findings.map((finding) => (
-          <TableRow key={finding.id}>
-            <TableCell>
-              <div>
-                <strong>{finding.attack_name}</strong>
-                <div style={{ fontSize: 12, opacity: 0.7 }}>{finding.attack_id}</div>
-              </div>
-            </TableCell>
-            <TableCell>
-              <Badge color={severityColor(finding.severity)} appearance="outline">
-                {finding.severity}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Badge color={statusColor(finding.status)} appearance="filled">
-                {finding.status.toUpperCase()}
-              </Badge>
-            </TableCell>
-            <TableCell>{finding.category}</TableCell>
-            <TableCell>
-              <Link
-                href={`/findings/detail/?scanId=${encodeURIComponent(scanId)}&findingId=${encodeURIComponent(finding.id)}`}
-              >
-                <Button appearance="subtle" icon={<Eye20Regular />}>
-                  View trace
-                </Button>
-              </Link>
-            </TableCell>
-          </TableRow>
-        ))}
+        {sorted.map((finding) => {
+          const judgment =
+            typeof finding.evidence.judgment === "string"
+              ? finding.evidence.judgment
+              : null;
+
+          return (
+            <TableRow key={finding.id}>
+              <TableCell>
+                <div>
+                  <strong>{finding.attack_name}</strong>
+                  <div style={{ fontSize: 12, opacity: 0.7 }}>{finding.attack_id}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge color={severityColor(finding.severity)} appearance="outline">
+                  {finding.severity}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <Badge color={statusColor(finding.status)} appearance="filled">
+                  {finding.status.toUpperCase()}
+                </Badge>
+              </TableCell>
+              <TableCell>{formatCategory(finding.category)}</TableCell>
+              <TableCell>
+                <span style={{ fontSize: 13, maxWidth: 280, display: "inline-block" }}>
+                  {judgment ?? "—"}
+                </span>
+              </TableCell>
+              <TableCell>
+                <Link
+                  href={`/findings/detail/?scanId=${encodeURIComponent(scanId)}&findingId=${encodeURIComponent(finding.id)}`}
+                >
+                  <Button appearance="subtle" icon={<Eye20Regular />}>
+                    View trace
+                  </Button>
+                </Link>
+              </TableCell>
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );

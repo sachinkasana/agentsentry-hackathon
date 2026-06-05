@@ -12,7 +12,7 @@ A beginner's guide to when AgentSentry runs checks — and what happens "on the 
 |-------|------|----------------------------|
 | **Register** | Once (when you add an agent) | Saves metadata only — **no scan** |
 | **Scan** | When you explicitly trigger it | Runs attack simulations against the agent |
-| **Guard (on the fly)** | Every live request | **Not built yet** — planned Day 3 |
+| **Guard (on the fly)** | Every live request / scan with `defense_enabled` | **Implemented** — policy + heuristic Prompt Shields |
 
 ---
 
