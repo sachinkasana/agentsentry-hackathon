@@ -18,8 +18,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy
-    # Push to main waits for a reviewer on the `prod` environment (see docs/AZURE_DEPLOY.md).
-    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' || 'preview' }}
+    # Only main pushes use the `prod` environment (manual approval). Other runs use repo secrets directly.
+    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,17 +52,18 @@ jobs:
           NEXT_PUBLIC_DEMO_MODE: ${{ vars.NEXT_PUBLIC_DEMO_MODE || 'true' }}
         run: npm run build
 
+      - name: Verify static export output
+        run: test -f mission-control/out/index.html
+
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
-          app_location: mission-control
-          output_location: out
+          app_location: mission-control/out
           skip_app_build: true
-          # Build still passes if the token is missing; deploy is skipped until the secret exists.
-          skip_deploy_on_missing_secrets: true
+          is_static_export: true
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
