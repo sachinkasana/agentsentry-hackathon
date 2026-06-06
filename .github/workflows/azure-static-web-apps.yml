@@ -32,13 +32,21 @@ jobs:
           cache: npm
           cache-dependency-path: mission-control/package-lock.json
 
-      - name: Patch API proxy in staticwebapp.config.json
+      - name: Resolve API endpoint
+        id: api
         env:
-          AGENTSENTRY_API_FQDN: ${{ secrets.AGENTSENTRY_API_FQDN }}
+          AGENTSENTRY_API_FQDN: ${{ secrets.AGENTSENTRY_API_FQDN || vars.AGENTSENTRY_API_FQDN }}
         run: |
-          if [ -n "$AGENTSENTRY_API_FQDN" ]; then
-            sed -i "s|REPLACE_WITH_ACA_FQDN|${AGENTSENTRY_API_FQDN}|g" mission-control/staticwebapp.config.json
+          if [ -z "$AGENTSENTRY_API_FQDN" ]; then
+            echo "::error::Add repository secret AGENTSENTRY_API_FQDN (Container App hostname, no https://)"
+            exit 1
           fi
+          echo "fqdn=$AGENTSENTRY_API_FQDN" >> "$GITHUB_OUTPUT"
+          echo "url=https://${AGENTSENTRY_API_FQDN}" >> "$GITHUB_OUTPUT"
+
+      - name: Patch API proxy in staticwebapp.config.json
+        run: |
+          sed -i "s|REPLACE_WITH_ACA_FQDN|${{ steps.api.outputs.fqdn }}|g" mission-control/staticwebapp.config.json
 
       - name: Install dependencies
         working-directory: mission-control
@@ -47,7 +55,7 @@ jobs:
       - name: Build Mission Control
         working-directory: mission-control
         env:
-          NEXT_PUBLIC_API_URL: ''
+          NEXT_PUBLIC_API_URL: ${{ steps.api.outputs.url }}
           NEXT_PUBLIC_APPLICATIONINSIGHTS_CONNECTION_STRING: ${{ secrets.APPLICATIONINSIGHTS_CONNECTION_STRING }}
           NEXT_PUBLIC_DEMO_MODE: ${{ vars.NEXT_PUBLIC_DEMO_MODE || 'true' }}
         run: npm run build
