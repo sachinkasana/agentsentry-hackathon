@@ -61,6 +61,8 @@ jobs:
           app_location: mission-control
           output_location: out
           skip_app_build: true
+          # Build still passes if the token is missing; deploy is skipped until the secret exists.
+          skip_deploy_on_missing_secrets: true
 
   close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
