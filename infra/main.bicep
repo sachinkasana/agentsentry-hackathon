@@ -14,6 +14,9 @@ param swaLocation string = 'southeastasia'
 @description('Container image tag to deploy to Container Apps')
 param imageTag string = 'latest'
 
+@description('When false, only ACR/App Insights/ACA environment are deployed (image build comes next)')
+param deployApplication bool = true
+
 @description('Tags applied to all resources')
 param tags object = {
   project: 'AgentSentry'
@@ -40,7 +43,16 @@ module registry 'modules/containerRegistry.bicep' = {
   }
 }
 
-module containerApp 'modules/containerApp.bicep' = {
+module managedEnvironment 'modules/managedEnvironment.bicep' = {
+  name: 'managedEnvironment'
+  params: {
+    baseName: baseName
+    location: location
+    tags: tags
+  }
+}
+
+module containerApp 'modules/containerApp.bicep' = if (deployApplication) {
   name: 'containerApp'
   params: {
     baseName: baseName
@@ -49,28 +61,29 @@ module containerApp 'modules/containerApp.bicep' = {
     containerImage: '${registry.outputs.loginServer}/agentsentry-api:${imageTag}'
     registryLoginServer: registry.outputs.loginServer
     registryName: acrName
+    managedEnvironmentId: managedEnvironment.outputs.environmentId
     applicationInsightsConnectionString: appInsights.outputs.connectionString
   }
 }
 
-module staticWebApp 'modules/staticWebApp.bicep' = {
+module staticWebApp 'modules/staticWebApp.bicep' = if (deployApplication) {
   name: 'staticWebApp'
   params: {
     baseName: baseName
     location: swaLocation
     tags: tags
-    apiOrigin: containerApp.outputs.fqdn
+    apiOrigin: containerApp!.outputs.fqdn
     applicationInsightsConnectionString: appInsights.outputs.connectionString
   }
 }
 
 output applicationInsightsConnectionString string = appInsights.outputs.connectionString
 output applicationInsightsInstrumentationKey string = appInsights.outputs.instrumentationKey
-output containerAppFqdn string = containerApp.outputs.fqdn
-output containerAppName string = containerApp.outputs.containerAppName
+output containerAppFqdn string = deployApplication ? containerApp!.outputs.fqdn : ''
+output containerAppName string = deployApplication ? containerApp!.outputs.containerAppName : '${baseName}-api'
 output acrLoginServer string = registry.outputs.loginServer
 output acrName string = acrName
-output staticWebAppHostname string = staticWebApp.outputs.defaultHostname
-output staticWebAppName string = staticWebApp.outputs.staticWebAppName
+output staticWebAppHostname string = deployApplication ? staticWebApp!.outputs.defaultHostname : ''
+output staticWebAppName string = deployApplication ? staticWebApp!.outputs.staticWebAppName : '${baseName}-mc'
 output backendLocation string = location
 output swaLocation string = swaLocation

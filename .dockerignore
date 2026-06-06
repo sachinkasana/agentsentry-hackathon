@@ -11,5 +11,6 @@ docs/
 tests/
 demo/
 *.md
+!README.md
 .env
 .agentsentry/

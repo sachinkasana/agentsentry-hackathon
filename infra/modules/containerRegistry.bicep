@@ -1,3 +1,4 @@
+@minLength(5)
 param baseName string
 param location string
 param tags object

@@ -18,6 +18,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy
+    # Push to main waits for a reviewer on the `prod` environment (see docs/AZURE_DEPLOY.md).
+    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' || 'preview' }}
     steps:
       - uses: actions/checkout@v4
         with:

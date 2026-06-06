@@ -15,6 +15,8 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Push to main waits for a reviewer on the `prod` environment (see docs/AZURE_DEPLOY.md).
+    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' || 'preview' }}
     steps:
       - uses: actions/checkout@v4
 

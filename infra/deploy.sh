@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-RG="${RG:-rg-agentsentry}"
+RG="${RG:-ms-ai-hackathon}"
 # India: Central India for API/ACA/ACR (Azure has no "northindia" region code)
 LOCATION="${LOCATION:-centralindia}"
 # SWA is not available in India — nearest supported region
@@ -17,22 +17,30 @@ echo "    Static Web App:        $SWA_LOCATION"
 
 az group create --name "$RG" --location "$LOCATION" --output none
 
-DEPLOYMENT_NAME="agentsentry-$(date +%Y%m%d%H%M%S)"
-echo "==> Running Bicep deployment: $DEPLOYMENT_NAME"
+deploy_bicep() {
+  local name="$1"
+  local deploy_app="$2"
+  echo "==> Running Bicep deployment: $name (deployApplication=$deploy_app)"
+  az deployment group create \
+    --name "$name" \
+    --resource-group "$RG" \
+    --template-file "$ROOT_DIR/infra/main.bicep" \
+    --parameters \
+      baseName="$BASE_NAME" \
+      location="$LOCATION" \
+      swaLocation="$SWA_LOCATION" \
+      imageTag="$IMAGE_TAG" \
+      deployApplication="$deploy_app" \
+    --query properties.outputs \
+    -o json > "$ROOT_DIR/infra/deployment-outputs.json"
+}
 
-az deployment group create \
-  --name "$DEPLOYMENT_NAME" \
-  --resource-group "$RG" \
-  --template-file "$ROOT_DIR/infra/main.bicep" \
-  --parameters baseName="$BASE_NAME" location="$LOCATION" swaLocation="$SWA_LOCATION" imageTag="$IMAGE_TAG" \
-  --query properties.outputs \
-  -o json > "$ROOT_DIR/infra/deployment-outputs.json"
+# Phase 1: ACR + App Insights + ACA environment only (no container image pull yet).
+FOUNDATION_NAME="agentsentry-foundation-$(date +%Y%m%d%H%M%S)"
+deploy_bicep "$FOUNDATION_NAME" "false"
 
 ACR_NAME=$(jq -r '.acrName.value' "$ROOT_DIR/infra/deployment-outputs.json")
-API_FQDN=$(jq -r '.containerAppFqdn.value' "$ROOT_DIR/infra/deployment-outputs.json")
-SWA_HOST=$(jq -r '.staticWebAppHostname.value' "$ROOT_DIR/infra/deployment-outputs.json")
 APPINSIGHTS_CS=$(jq -r '.applicationInsightsConnectionString.value' "$ROOT_DIR/infra/deployment-outputs.json")
-SWA_NAME=$(jq -r '.staticWebAppName.value' "$ROOT_DIR/infra/deployment-outputs.json")
 
 echo "==> Building and pushing API image to ACR: $ACR_NAME"
 az acr build \
@@ -41,18 +49,28 @@ az acr build \
   --file "$ROOT_DIR/Dockerfile" \
   "$ROOT_DIR"
 
-echo "==> Restarting Container App to pull new image"
+# Phase 2: Container App + Static Web App (image now exists in ACR).
+APP_NAME="agentsentry-app-$(date +%Y%m%d%H%M%S)"
+deploy_bicep "$APP_NAME" "true"
+
+API_FQDN=$(jq -r '.containerAppFqdn.value' "$ROOT_DIR/infra/deployment-outputs.json")
+SWA_HOST=$(jq -r '.staticWebAppHostname.value' "$ROOT_DIR/infra/deployment-outputs.json")
+SWA_NAME=$(jq -r '.staticWebAppName.value' "$ROOT_DIR/infra/deployment-outputs.json")
 CONTAINER_APP=$(jq -r '.containerAppName.value' "$ROOT_DIR/infra/deployment-outputs.json")
-az containerapp revision copy \
-  --name "$CONTAINER_APP" \
-  --resource-group "$RG" \
-  --image "${ACR_NAME}.azurecr.io/agentsentry-api:${IMAGE_TAG}" \
-  --output none 2>/dev/null || \
-az containerapp update \
-  --name "$CONTAINER_APP" \
-  --resource-group "$RG" \
-  --image "${ACR_NAME}.azurecr.io/agentsentry-api:${IMAGE_TAG}" \
-  --output none
+
+echo "==> Waiting for Container App revision to become healthy"
+for i in $(seq 1 24); do
+  STATE=$(az containerapp show \
+    --name "$CONTAINER_APP" \
+    --resource-group "$RG" \
+    --query "properties.runningStatus" -o tsv 2>/dev/null || echo "Unknown")
+  if [[ "$STATE" == "Running" ]]; then
+    echo "    Container App is Running"
+    break
+  fi
+  echo "    Status: $STATE (attempt $i/24) — waiting 10s..."
+  sleep 10
+done
 
 echo "==> Patching staticwebapp.config.json with API FQDN: $API_FQDN"
 sed "s|REPLACE_WITH_ACA_FQDN|${API_FQDN}|g" \

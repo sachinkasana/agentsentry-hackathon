@@ -4,19 +4,12 @@ param tags object
 param containerImage string
 param registryLoginServer string
 param registryName string
+param managedEnvironmentId string
 @secure()
 param applicationInsightsConnectionString string
 
-var environmentName = '${baseName}-aca-env'
 var containerAppName = '${baseName}-api'
 var acrPullRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
-
-resource environment 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: environmentName
-  location: location
-  tags: tags
-  properties: {}
-}
 
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: containerAppName
@@ -26,7 +19,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     type: 'SystemAssigned'
   }
   properties: {
-    managedEnvironmentId: environment.id
+    managedEnvironmentId: managedEnvironmentId
     configuration: {
       ingress: {
         external: true
@@ -50,6 +43,28 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: {
+                path: '/healthz'
+                port: 8080
+                scheme: 'HTTP'
+              }
+              periodSeconds: 5
+              failureThreshold: 24
+            }
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/healthz'
+                port: 8080
+                scheme: 'HTTP'
+              }
+              periodSeconds: 10
+              failureThreshold: 3
+            }
+          ]
           env: [
             {
               name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
