@@ -85,23 +85,23 @@ az deployment group create \
   -p baseName=agentsentry location=centralindia swaLocation=southeastasia
 ```
 
-### 3. Enable manual approval for `main` deploys
+### 3. Enable manual approval (`prod` environment)
 
-Deployment workflows use GitHub Environments so pushes to **`main`** pause until someone approves.
+There is **one** production UI + API endpoint. All deployment workflows use the same GitHub environment so nothing deploys without approval.
 
 1. GitHub repo → **Settings** → **Environments** → **New environment** → name it `prod`
 2. Under **Deployment protection rules**, enable **Required reviewers** and add yourself (or your team)
-3. (Optional) Create a second environment named `preview` (no protection rules) for PR previews and non-`main` branch deploys — GitHub will auto-create it on first use if you skip this step
+3. Store deploy secrets as **Repository secrets** (not only environment secrets) so every `prod` job can read them
 
-Affected workflows:
+Affected workflows (all use `environment: prod`):
 
-| Workflow | Approval required |
-|----------|-------------------|
-| Deploy API to Azure Container Apps | Push to `main` only |
-| Deploy Mission Control (SWA) | Push to `main` only |
-| Deploy Azure Infrastructure | Every run (`workflow_dispatch`) |
+| Workflow | Triggers |
+|----------|----------|
+| Deploy API to Azure Container Apps | Push, `workflow_dispatch` |
+| Deploy Mission Control (SWA) | Push, PR, `workflow_dispatch` |
+| Deploy Azure Infrastructure | `workflow_dispatch` |
 
-After a push to `main`, open **Actions** → the running workflow → **Review deployments** → **Approve and deploy**.
+When a workflow runs, open **Actions** → **Review deployments** → **Approve and deploy**.
 
 ### 4. Add GitHub secrets
 
