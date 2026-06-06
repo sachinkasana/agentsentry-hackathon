@@ -28,12 +28,21 @@ async def test_scan_against_mock_target_runs_all_attacks() -> None:
     scan = await run_scan(agent=agent, storage=storage)
 
     assert scan.status.value == "completed"
-    assert len(scan.findings) >= 1
-    # The fully implemented indirect injection attack should mark VULNERABLE.
+    assert len(scan.findings) == 6
     by_id = {f.attack_id: f for f in scan.findings}
-    assert by_id["indirect_injection_v1"].status == FindingStatus.VULNERABLE
-    # Posture computed from runnable findings only — should not be None.
-    assert scan.posture_score is not None
+    expected_ids = {
+        "indirect_injection_v1",
+        "tool_poisoning_v1",
+        "exfiltration_url_v1",
+        "identity_spoofing_v1",
+        "memory_poisoning_v1",
+        "confused_deputy_v1",
+    }
+    assert set(by_id) == expected_ids
+    for attack_id in expected_ids:
+        assert by_id[attack_id].status == FindingStatus.VULNERABLE, attack_id
+    # All attacks succeed against the deliberately vulnerable mock → posture 0.
+    assert scan.posture_score == 0.0
 
 
 def test_posture_score_all_defended() -> None:

@@ -1,8 +1,17 @@
-"""Runtime guard — middleware that defends a live agent.
+"""Runtime guard — policy engine, Prompt Shields, and decision events."""
 
-Day-3 work. Will contain:
-  - middleware.py — FastAPI middleware wrapping a target agent endpoint
-  - shields.py    — Azure AI Content Safety Prompt Shields integration
-  - policy.py     — capability allowlist + decision logging
-  - tracing.py    — Application Insights custom events for blocks
-"""
+from agentsentry.guard.events import EVENT_BUS, RuntimeEvent, RuntimeEventBus
+from agentsentry.guard.policy import GuardDecision, evaluate_tool_call
+from agentsentry.guard.shields import ShieldVerdict, scan_untrusted_content
+from agentsentry.guard.wrapper import GuardedTarget
+
+__all__ = [
+    "EVENT_BUS",
+    "GuardDecision",
+    "GuardedTarget",
+    "RuntimeEvent",
+    "RuntimeEventBus",
+    "ShieldVerdict",
+    "evaluate_tool_call",
+    "scan_untrusted_content",
+]

@@ -1,0 +1,86 @@
+name: Deploy Azure Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      resource_group:
+        description: Azure resource group name
+        required: true
+        default: ms-ai-hackathon
+      location:
+        description: Azure region
+        required: true
+        default: centralindia
+      base_name:
+        description: Resource name prefix
+        required: true
+        default: agentsentry
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Ensure resource group
+        run: |
+          az group create \
+            --name "${{ github.event.inputs.resource_group || 'ms-ai-hackathon' }}" \
+            --location "${{ github.event.inputs.location || 'centralindia' }}"
+
+      - name: Deploy foundation (ACR + App Insights + ACA env)
+        run: |
+          RG="${{ github.event.inputs.resource_group || 'ms-ai-hackathon' }}"
+          az deployment group create \
+            --name "agentsentry-foundation-$(date +%Y%m%d%H%M%S)" \
+            --resource-group "$RG" \
+            --template-file infra/main.bicep \
+            --parameters \
+              baseName="${{ github.event.inputs.base_name || 'agentsentry' }}" \
+              location="${{ github.event.inputs.location || 'centralindia' }}" \
+              swaLocation="southeastasia" \
+              deployApplication=false \
+            --query properties.outputs \
+            -o json > deployment-outputs.json
+
+      - name: Build and push API image
+        run: |
+          RG="${{ github.event.inputs.resource_group || 'ms-ai-hackathon' }}"
+          ACR_NAME=$(jq -r '.acrName.value' deployment-outputs.json)
+          az acr build \
+            --registry "$ACR_NAME" \
+            --image "agentsentry-api:latest" \
+            --file Dockerfile \
+            .
+
+      - name: Deploy Container App + Static Web App
+        run: |
+          RG="${{ github.event.inputs.resource_group || 'ms-ai-hackathon' }}"
+          az deployment group create \
+            --name "agentsentry-app-$(date +%Y%m%d%H%M%S)" \
+            --resource-group "$RG" \
+            --template-file infra/main.bicep \
+            --parameters \
+              baseName="${{ github.event.inputs.base_name || 'agentsentry' }}" \
+              location="${{ github.event.inputs.location || 'centralindia' }}" \
+              swaLocation="southeastasia" \
+              deployApplication=true \
+            --query properties.outputs \
+            -o json > deployment-outputs.json
+
+          cat deployment-outputs.json
+
+      - name: Upload deployment outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-outputs
+          path: deployment-outputs.json

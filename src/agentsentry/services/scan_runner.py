@@ -11,6 +11,7 @@ from agentsentry.attacks import ATTACK_REGISTRY
 from agentsentry.attacks.base import AttackBase
 from agentsentry.models import Agent, Scan, ScanStatus
 from agentsentry.models.finding import Finding, FindingStatus
+from agentsentry.guard import GuardedTarget
 from agentsentry.services.target_client import TargetAgent, build_target
 from agentsentry.storage import Storage
 
@@ -57,12 +58,14 @@ async def run_scan(
     agent: Agent,
     storage: Storage,
     attack_ids: list[str] | None = None,
+    defense_enabled: bool = False,
 ) -> Scan:
     """Run a scan, persist it, and return the populated Scan."""
     scan = Scan(
         id=_new_scan_id(),
         agent_id=agent.id,
         status=ScanStatus.RUNNING,
+        defense_enabled=defense_enabled,
         started_at=datetime.now(timezone.utc),
     )
     await storage.save_scan(scan)
@@ -70,6 +73,8 @@ async def run_scan(
 
     attacks = _build_attacks(attack_ids)
     target: TargetAgent = build_target(agent.endpoint)
+    if defense_enabled:
+        target = GuardedTarget(target, agent_id=agent.id)
 
     findings: list[Finding] = []
     try:
