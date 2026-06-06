@@ -18,8 +18,8 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy
-    # Only main pushes use the `prod` environment (manual approval). Other runs use repo secrets directly.
-    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' || '' }}
+    # Only main pushes use the `prod` environment (manual approval).
+    environment: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'prod' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +58,7 @@ jobs:
       - name: Deploy to Azure Static Web Apps
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN || vars.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: mission-control/out
@@ -73,5 +73,5 @@ jobs:
       - name: Close Static Web Apps PR environment
         uses: Azure/static-web-apps-deploy@v1
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN || vars.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: close
