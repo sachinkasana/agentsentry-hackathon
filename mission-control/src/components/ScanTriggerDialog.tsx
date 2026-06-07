@@ -19,12 +19,22 @@ import {
   AccordionItem,
   AccordionHeader,
   AccordionPanel,
+  makeStyles,
+  tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { listAttacks, triggerScan } from "@/lib/api";
 import { formatCategory, groupAttacksByCategory } from "@/lib/attacks";
 import { trackScanTriggered } from "@/lib/telemetry";
 import type { AttackMetadata, Scan } from "@/types/api";
+
+const useStyles = makeStyles({
+  attackDescription: {
+    marginLeft: "28px",
+    marginTop: tokens.spacingVerticalXS,
+    color: tokens.colorNeutralForeground2,
+  },
+});
 
 export function ScanTriggerDialog({
   open,
@@ -39,6 +49,7 @@ export function ScanTriggerDialog({
   onClose: () => void;
   onScanComplete: (scan: Scan) => void;
 }) {
+  const styles = useStyles();
   const [attacks, setAttacks] = useState<AttackMetadata[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -198,11 +209,7 @@ export function ScanTriggerDialog({
                                   </span>
                                 }
                               />
-                              <Text
-                                size={200}
-                                block
-                                style={{ marginLeft: 28, marginTop: 4, opacity: 0.85 }}
-                              >
+                              <Text size={200} block className={styles.attackDescription}>
                                 {attack.description}
                               </Text>
                             </div>

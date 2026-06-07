@@ -1,3 +1,5 @@
+import { tokens } from "@fluentui/react-components";
+
 export type PostureLevel = "critical" | "warning" | "good" | "unknown";
 
 export function getPostureLevel(score: number | null | undefined): PostureLevel {
@@ -7,17 +9,18 @@ export function getPostureLevel(score: number | null | undefined): PostureLevel 
   return "good";
 }
 
+/** Foreground colors tuned for webDarkTheme surfaces. */
 export function getPostureColor(score: number | null | undefined): string {
   const level = getPostureLevel(score);
   switch (level) {
     case "critical":
-      return "#d13438";
+      return tokens.colorPaletteRedForeground1;
     case "warning":
-      return "#ca5010";
+      return tokens.colorPaletteDarkOrangeForeground1;
     case "good":
-      return "#107c10";
+      return tokens.colorPaletteGreenForeground1;
     default:
-      return "#616161";
+      return tokens.colorNeutralForeground3;
   }
 }
 
