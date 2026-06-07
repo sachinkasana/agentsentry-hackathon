@@ -135,7 +135,7 @@ export default function FleetPage() {
         </Card>
         <Card className={styles.statCard}>
           <Text size={200}>Critical Vulnerabilities</Text>
-          <Text className={styles.statValue} style={{ color: "#d13438" }}>
+          <Text className={styles.statValue} style={{ color: getPostureColor(0) }}>
             {criticalCount}
           </Text>
         </Card>

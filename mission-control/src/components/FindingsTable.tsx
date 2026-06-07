@@ -23,6 +23,16 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
   },
+  meta: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+  },
+  judgment: {
+    fontSize: tokens.fontSizeBase300,
+    maxWidth: "280px",
+    display: "inline-block",
+    color: tokens.colorNeutralForeground2,
+  },
 });
 
 function severityColor(severity: string): "danger" | "warning" | "informative" | "subtle" {
@@ -86,7 +96,7 @@ export function FindingsTable({
               <TableCell>
                 <div>
                   <strong>{finding.attack_name}</strong>
-                  <div style={{ fontSize: 12, opacity: 0.7 }}>{finding.attack_id}</div>
+                  <div className={styles.meta}>{finding.attack_id}</div>
                 </div>
               </TableCell>
               <TableCell>
@@ -101,9 +111,7 @@ export function FindingsTable({
               </TableCell>
               <TableCell>{formatCategory(finding.category)}</TableCell>
               <TableCell>
-                <span style={{ fontSize: 13, maxWidth: 280, display: "inline-block" }}>
-                  {judgment ?? "—"}
-                </span>
+                <span className={styles.judgment}>{judgment ?? "—"}</span>
               </TableCell>
               <TableCell>
                 <Link

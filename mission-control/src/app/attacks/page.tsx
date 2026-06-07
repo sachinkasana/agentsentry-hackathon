@@ -16,6 +16,7 @@ import {
   groupAttacksByCategory,
   severityRank,
 } from "@/lib/attacks";
+import { getPostureColor } from "@/lib/posture";
 import { LoadingState } from "@/components/LoadingState";
 import { ErrorState } from "@/components/ErrorState";
 import type { AttackMetadata } from "@/types/api";
@@ -112,7 +113,7 @@ export default function AttackPackPage() {
         </Card>
         <Card className={styles.statCard}>
           <Text size={200}>Critical severity</Text>
-          <Text size={600} weight="semibold" style={{ color: "#d13438" }}>
+          <Text size={600} weight="semibold" style={{ color: getPostureColor(0) }}>
             {criticalCount}
           </Text>
         </Card>

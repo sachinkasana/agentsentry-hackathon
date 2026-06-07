@@ -7,12 +7,12 @@
     {
       "route": "/v1/*",
       "allowedRoles": ["anonymous"],
-      "rewrite": "https://REPLACE_WITH_ACA_FQDN/v1/*"
+      "rewrite": "https://agentsentry-api.victorioushill-6266b125.centralindia.azurecontainerapps.io/v1/*"
     },
     {
       "route": "/healthz",
       "allowedRoles": ["anonymous"],
-      "rewrite": "https://REPLACE_WITH_ACA_FQDN/healthz"
+      "rewrite": "https://agentsentry-api.victorioushill-6266b125.centralindia.azurecontainerapps.io/healthz"
     }
   ],
   "globalHeaders": {

@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import {
   Badge,
   Card,
@@ -15,6 +14,7 @@ import {
 } from "@fluentui/react-icons";
 import Link from "next/link";
 import { formatCategory, sortFindingsBySeverity } from "@/lib/attacks";
+import { getFindingStatusSurface } from "@/lib/statusSurfaces";
 import type { Finding } from "@/types/api";
 
 const useStyles = makeStyles({
@@ -36,40 +36,44 @@ const useStyles = makeStyles({
     alignItems: "flex-start",
     gap: tokens.spacingHorizontalS,
   },
+  title: {
+    color: tokens.colorNeutralForeground1,
+  },
   meta: {
     color: tokens.colorNeutralForeground3,
     fontSize: tokens.fontSizeBase200,
   },
+  badges: {
+    display: "flex",
+    gap: tokens.spacingHorizontalXS,
+    flexWrap: "wrap",
+  },
+  traceLink: {
+    color: tokens.colorBrandForegroundLink,
+    fontSize: tokens.fontSizeBase300,
+    marginTop: tokens.spacingVerticalXS,
+    textDecoration: "none",
+    ":hover": {
+      color: tokens.colorBrandForegroundLinkHover,
+      textDecoration: "underline",
+    },
+  },
 });
 
-function cardAccent(status: Finding["status"]): CSSProperties {
+function StatusIcon({
+  status,
+  color,
+}: {
+  status: Finding["status"];
+  color: string;
+}) {
   switch (status) {
     case "vulnerable":
-      return {
-        borderColor: "#d13438",
-        backgroundColor: "#fdf3f4",
-      };
+      return <DismissCircle20Filled style={{ color }} />;
     case "defended":
-      return {
-        borderColor: "#107c10",
-        backgroundColor: "#f1faf1",
-      };
+      return <CheckmarkCircle20Filled style={{ color }} />;
     default:
-      return {
-        borderColor: "#ca5010",
-        backgroundColor: "#fff9f5",
-      };
-  }
-}
-
-function StatusIcon({ status }: { status: Finding["status"] }) {
-  switch (status) {
-    case "vulnerable":
-      return <DismissCircle20Filled style={{ color: "#d13438" }} />;
-    case "defended":
-      return <CheckmarkCircle20Filled style={{ color: "#107c10" }} />;
-    default:
-      return <Warning20Filled style={{ color: "#ca5010" }} />;
+      return <Warning20Filled style={{ color }} />;
   }
 }
 
@@ -89,20 +93,27 @@ export function AttackCoverageChart({
 
   return (
     <div className={styles.grid}>
-      {sorted.map((finding) => (
+      {sorted.map((finding) => {
+        const surface = getFindingStatusSurface(finding.status);
+        return (
           <Card
             key={finding.id}
             className={styles.card}
-            style={cardAccent(finding.status)}
+            style={{
+              borderColor: surface.borderColor,
+              backgroundColor: surface.backgroundColor,
+            }}
           >
             <div className={styles.header}>
               <div>
-                <Text weight="semibold">{finding.attack_name}</Text>
+                <Text weight="semibold" className={styles.title}>
+                  {finding.attack_name}
+                </Text>
                 <div className={styles.meta}>{finding.attack_id}</div>
               </div>
-              <StatusIcon status={finding.status} />
+              <StatusIcon status={finding.status} color={surface.iconColor} />
             </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            <div className={styles.badges}>
               <Badge appearance="outline" color="danger">
                 {finding.severity}
               </Badge>
@@ -110,12 +121,13 @@ export function AttackCoverageChart({
             </div>
             <Link
               href={`/findings/detail/?scanId=${encodeURIComponent(scanId)}&findingId=${encodeURIComponent(finding.id)}`}
-              style={{ fontSize: 13, marginTop: 4 }}
+              className={styles.traceLink}
             >
               View evidence trace →
             </Link>
           </Card>
-      ))}
+        );
+      })}
     </div>
   );
 }

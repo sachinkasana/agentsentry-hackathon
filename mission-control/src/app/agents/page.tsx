@@ -56,6 +56,10 @@ const useStyles = makeStyles({
   header: {
     marginBottom: tokens.spacingVerticalL,
   },
+  meta: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
+  },
 });
 
 export default function AgentsPage() {
@@ -208,9 +212,7 @@ export default function AgentsPage() {
                   <TableRow key={agent.id}>
                     <TableCell>
                       <strong>{agent.name}</strong>
-                      <div style={{ fontSize: 12, opacity: 0.7 }}>
-                        {agent.id}
-                      </div>
+                      <div className={styles.meta}>{agent.id}</div>
                     </TableCell>
                     <TableCell>
                       <Badge appearance="outline">{agent.framework}</Badge>

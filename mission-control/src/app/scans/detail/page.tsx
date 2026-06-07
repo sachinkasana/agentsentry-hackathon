@@ -1,6 +1,7 @@
 "use client";
 
-import { Text, Card, Badge, Button } from "@fluentui/react-components";
+import { Text, Card, Badge, Button, tokens } from "@fluentui/react-components";
+import { getPostureColor } from "@/lib/posture";
 import { ArrowLeft20Regular } from "@fluentui/react-icons";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -112,16 +113,16 @@ function ScanDetailContent() {
         </Card>
         <Card style={{ padding: 16 }}>
           <Text size={200}>Vulnerable</Text>
-          <Text size={600} weight="semibold" style={{ color: "#d13438" }}>{vulnerable}</Text>
+          <Text size={600} weight="semibold" style={{ color: getPostureColor(0) }}>{vulnerable}</Text>
         </Card>
         <Card style={{ padding: 16 }}>
           <Text size={200}>Defended</Text>
-          <Text size={600} weight="semibold" style={{ color: "#107c10" }}>{defended}</Text>
+          <Text size={600} weight="semibold" style={{ color: getPostureColor(100) }}>{defended}</Text>
         </Card>
       </div>
 
       {scan.error && (
-        <Card style={{ padding: 16, marginBottom: 16, borderColor: "#d13438" }}>
+        <Card style={{ padding: 16, marginBottom: 16, borderColor: tokens.colorPaletteRedBorder1 }}>
           <Text weight="semibold">Scan error</Text>
           <Text>{scan.error}</Text>
         </Card>
